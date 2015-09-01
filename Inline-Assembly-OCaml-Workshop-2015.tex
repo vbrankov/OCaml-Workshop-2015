@@ -1,4 +1,15 @@
 \documentclass{beamer}
+\usepackage{listings}
+\usepackage[scaled=0.8]{DejaVuSansMono}
+\lstset{,
+  basicstyle=\footnotesize\ttfamily,
+  showstringspaces=false,
+  tabsize=2,
+  xleftmargin=\parindent,
+  xrightmargin=\parindent,
+  columns=flexible,
+  frame=tb
+}
 \title[Inline Assembly]
 {Inline Assembly for OCaml}
 \author[Brankov, Vladimir]{V.~Brankov\inst{1}}
@@ -12,10 +23,62 @@
 
 \begin{document}
 \begin{frame}
-\frametitle{This is the first slide}
+  \frametitle{OCaml Inline Assembly}
+  \begin{itemize}
+    \item Embed assembly code in OCaml code
+    \item Use OCaml variables and compiler optimizations
+    \item Equivalent to custom native primitives (no C call)
+      \bigskip
+    \item The main goal is speed
+      \begin{itemize}
+        \item vector instructions (SSE, AVX)
+        \item special instructions (Float.max)
+        \item language limits (Bigarray for HDF5)
+      \end{itemize}
+  \end{itemize}
 \end{frame}
 \begin{frame}
-\frametitle{This is the second slide}
-\framesubtitle{A bit more information about this}
+  \frametitle{OCaml Inline Assembly}
+  \begin{itemize}
+    \item Implementation: \lstinline[language=Bash]$opam switch 4.03.0+pr162$
+    \item Borrows GCC syntax:\\
+      \ \ \ \lstinline[language={[Objective]Caml}]$
+        external floor\_asm : float -> float$ \\
+      \ \ \ \ \ \ \lstinline[language={[Objective]Caml}]$
+        = "\%asm" "floor\_stub" "roundsd	\$1, \%0, \%1	\# floor" "mx" "=x"$
+    \item The syntax controls OCaml compiler optimizations
+      \begin{itemize}
+        \item Variables in registers or memory
+        \item Commutative variables
+        \item Modifying memory
+      \end{itemize}
+  \end{itemize}
+\end{frame}
+\begin{frame}
+  \frametitle{OCaml Inline Assembly}
+  \begin{itemize}
+    \item Alternatives:
+      \begin{itemize}
+        \item Blocks of C code
+        \item "noalloc" externals
+      \end{itemize}
+      \medskip
+    \item Synthetic benchmarks: \\
+      \medskip
+      \footnotesize \
+      \begin{tabular}{ll}
+        \texttt{float min} & \texttt{6x} \\
+        \texttt{floor} & \texttt{5x} \\
+        \texttt{+. *.} & \texttt{2.3x} \\
+        \texttt{Complex} & \texttt{1.3 - 12x} \\
+      \end{tabular}
+      \medskip
+    \item Real world applications
+      \begin{itemize}
+        \item Correlation matrix
+        \item Compex
+        \item HDF5
+      \end{itemize}
+  \end{itemize}
 \end{frame}
 \end{document}
