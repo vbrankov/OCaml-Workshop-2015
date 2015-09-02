@@ -25,17 +25,44 @@
 \begin{frame}
   \frametitle{OCaml Inline Assembly}
   \begin{itemize}
-    \item Embed assembly code in OCaml code
-    \item Use OCaml variables and compiler optimizations
-    \item Equivalent to custom native primitives (no C call)
-      \bigskip
-    \item The main goal is speed
+    \item Motivation: Intel AVX Vector Instructions
       \begin{itemize}
-        \item vector instructions (SSE, AVX)
-        \item special instructions (Float.max)
-        \item language limits (Bigarray for HDF5)
+        \item 4 x Float Vector = 4x performance
+      \end{itemize}
+      \bigskip
+    \item Embed assembly code in OCaml code
+      \begin{itemize}
+        \item Use OCaml variables and compiler optimizations
+        \item Equivalent to custom native primitives (no C call)
+      \end{itemize}
+      \bigskip
+    \item Speed
+      \begin{itemize}
+        \item Vector instructions
+        \item Special instructions (Float.max)
+        \item Language limits (Bigarray for HDF5)
       \end{itemize}
   \end{itemize}
+\end{frame}
+\begin{frame}[fragile]
+  \frametitle{OCaml Inline Assembly}
+  \begin{lstlisting}
+external float_min_c : float -> float -> float
+     = "float_min" "float_min_stub" "float"
+
+external float_min_asm : float -> float -> float
+     = "%asm" "float_min_asm_stub"
+       "minsd	%0, %2	# float_min" "mx" "2" "=x" ""
+
+        movsd       .L133(%rip), %xmm1
+        movsd       .L104(%rip), %xmm0
+        call        float_min_stub@PLT           # external C call
+        movsd       %xmm0, 24(%rsp)
+        movsd       .L133(%rip), %xmm0
+        movsd       .L104(%rip), %xmm1
+        minsd       %xmm1, %xmm0	                # inline assembly
+        movsd       %xmm0, 16(%rsp)
+  \end{lstlisting}
 \end{frame}
 \begin{frame}
   \frametitle{OCaml Inline Assembly}
